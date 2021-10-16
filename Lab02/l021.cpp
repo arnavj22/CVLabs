@@ -35,7 +35,6 @@ void part1(){
 	double y2 = rand() / double(RAND_MAX);
 	double x3 = rand() / double(RAND_MAX);
 	double y3 = rand() / double(RAND_MAX);
-	double points[4][4];
 	int count = 0;
 	cout << "Points: (" << x1 << ", " << y1 << ") (" << x2 << ", " << y2 << ") (" << x3 << ", " << y3 << ")\n";
 	int runs = 0;

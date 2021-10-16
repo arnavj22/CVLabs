@@ -82,8 +82,8 @@ class Line{
 		int dx = x2 - x1;
 		int dy = y2 - y1;
 
-
-		if(dx <= 0 and dy <= 0 or (dx <= 0 and dy > 0)){
+		if ((dx <= 0 and dy <= 0) or (dx <= 0 and dy > 0))
+		{
 			dx = -1 * (dx); // 150
 			dy = -1 * (dy); // -300
 			int temp = x1;
@@ -312,11 +312,11 @@ void part1(){
 	double y2 = rand() / double(RAND_MAX);
 	double x3 = rand() / double(RAND_MAX);
 	double y3 = rand() / double(RAND_MAX);
-	double points[4][4];
 	int count = 0;
 	cout << "Points: (" << x1 << ", " << y1 << ") (" << x2 << ", " << y2 << ") (" << x3 << ", " << y3 << ")\n";
 	int runs = 0;
-	while(count < 4){
+	while (count < 1)
+	{
 		double x = rand() / double(RAND_MAX);
 		double y = rand() / double(RAND_MAX);
 		bool a = inTriangle(x1, y1, x2, y2, x3, y3, x, y);
@@ -337,6 +337,12 @@ void part1(){
 			continue; //unsuccessful point
 		}
 	}
+	results[0][1] = x1;
+	results[1][1] = y1;
+	results[0][2] = x2;
+	results[1][2] = y2;
+	results[0][3] = x3;
+	results[1][3] = y3;
 	toText();
 }
 void part2(){

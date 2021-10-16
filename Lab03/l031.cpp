@@ -59,21 +59,49 @@ class Point{
 };
 list<Point> ps;
 void gen_points(){
+	ofstream myfile;
+	myfile.open("points.txt");
+	myfile << setprecision(23);
+	myfile << fixed;
 	srand(time(0));
 	for(int i = 0; i < 60; i++){
 		Point p = Point(rand() / double(RAND_MAX), rand() / double(RAND_MAX));
-		ps.push_back(p);
-		p.drawCircle(2.0/800.0);
+		//ps.push_back(p);
+
+		myfile << p.x << "  " << p.y << "\n";
 	}
 }
-pair<Point, Point> smallest_dist(){
+void get_points()
+{
+	ps.clear();
+	string line;
+	ifstream po("points.txt");
+	if (po.is_open())
+	{
+		while (getline(po, line, '\n'))
+		{
+			int pos = line.find(" ");
+			double x = stod(line.substr(0, pos));
+			double y = stod(line.substr(pos));
+			//cout << x << " " << y;
+			Point p = Point(x, y);
+			p.drawCircle(3.0 / 800.0);
+			ps.push_back(p);
+		}
+	}
+}
+pair<Point, Point> brute_force()
+{
 	double min = INT_MAX;
 	Point a;
 	Point b;
-	for (list<Point>::iterator i = ps.begin(); i != ps.end(); ++i){
-		for (list<Point>::iterator j= (next(i)); j != ps.end(); ++j){
+	for (list<Point>::iterator i = ps.begin(); i != ps.end(); i++)
+	{
+		for (list<Point>::iterator j = next(i); j != ps.end(); j++)
+		{
 			double dist = (*i).distance(*j);
-			if(dist < min){
+			if (dist < min)
+			{
 				min = dist;
 				a = *i;
 				b = *j;
@@ -81,28 +109,35 @@ pair<Point, Point> smallest_dist(){
 		}
 	}
 	pair<Point, Point> out;
-	a.drawCircle(2.0/800.0, 2);
-	b.drawCircle(2.0/800.0, 2);
-	a.drawCircle(3.0/800.0, 2);
-	b.drawCircle(3.0/800.0, 2);
+	a.drawCircle(2.0 / 800.0, 2);
+	b.drawCircle(2.0 / 800.0, 2);
+	a.drawCircle(3.0 / 800.0, 2);
+	b.drawCircle(3.0 / 800.0, 2);
 	out.first = a;
 	out.second = b;
 	return out;
 }
-void arrToFile(){
-	for(int i = 0; i < size; i++){
-		for(int j = 0; j < size; j++){
-			if(result[i][j] == 2){
+
+void arrToFile()
+{
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			if (result[i][j] == 2)
+			{
 				ppm[i * 3][j] = 1;
 				ppm[i * 3 + 1][j] = 0;
 				ppm[i * 3 + 1][j] = 0;
 			}
-			else if (result[i][j] == 1){
+			else if (result[i][j] == 1)
+			{
 				ppm[i * 3][j] = 0;
 				ppm[i * 3 + 1][j] = 0;
 				ppm[i * 3 + 2][j] = 0;
 			}
-			else{
+			else
+			{
 				ppm[i * 3][j] = 1;
 				ppm[i * 3 + 1][j] = 1;
 				ppm[i * 3 + 2][j] = 1;
@@ -110,7 +145,7 @@ void arrToFile(){
 		}
 	}
 	ofstream myfile;
-	myfile.open ("L3.ppm");
+	myfile.open("points.ppm");
 	myfile << "P3 " << size << " " << size <<" 1\n";
 	for(int j = 0; j < size; j++){
 		for(int i = 0; i < size; i++){
@@ -124,9 +159,12 @@ void arrToFile(){
 }
 void part1(){
 	gen_points();
-	pair<Point, Point> smalldist = smallest_dist();
+	get_points();
+	brute_force();
+	//pair<Point, Point> smalldist = brute_force();
 	arrToFile();
 }
+
 int main(){
 	part1();
 }
