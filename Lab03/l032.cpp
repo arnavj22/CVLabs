@@ -67,15 +67,28 @@ public:
         }
     };
 };
+class ppd
+{
+public:
+    Point p1;
+    Point p2;
+    double d;
+    ppd(Point pone, Point ptwo)
+    {
+        p1 = pone;
+        p2 = ptwo;
+        d = p1.distance(p2);
+    }
+};
 list<Point> ps;
-void gen_points()
+void gen_points(int n)
 {
     ofstream myfile;
     myfile.open("points.txt");
     myfile << setprecision(23);
     myfile << fixed;
     srand(time(0));
-    for (int i = 0; i < 60; i++)
+    for (int i = 0; i < n; i++)
     {
         Point p = Point(rand() / double(RAND_MAX), rand() / double(RAND_MAX));
         //ps.push_back(p);
@@ -102,12 +115,82 @@ void get_points()
         }
     }
 }
-pair<Point, Point> brute_force()
+bool comp(Point a, Point b)
+{
+    if (a.x == b.x)
+    {
+        return a.y < b.y;
+    }
+    return a.x < b.x;
+}
+ppd merge_helper(Point array[], int const f, int const l)
+{
+
+    int mid = f + (l - f) / 2;
+    if (l - f == 2)
+    {
+        //cout << f << " " << l << "\n";
+        //cout << ppd(array[f], array[l]).d << "\n";
+        return ppd(array[f], array[l]);
+    }
+    if (l - f == 3)
+    {
+        //cout << f << " " << l << "\n";
+        ppd pp1 = ppd(array[f], array[l]);
+        ppd pp2 = ppd(array[f + 1], array[l]);
+        ppd pp3 = ppd(array[f], array[f + 1]);
+        if (pp1.d < pp2.d and pp1.d < pp3.d)
+        {
+            //cout << pp1.d << "\n";
+            return pp1;
+        }
+        else if (pp2.d < pp3.d)
+        {
+            //cout << pp2.d << "\n";
+            return pp2;
+        }
+        //cout << pp3.d << "\n";
+        return pp3;
+    }
+
+    Point m = array[mid];
+    ppd min_points1 = merge_helper(array, f, mid);
+    ppd min_points2 = min_points1;
+    min_points2 = merge_helper(array, mid, l);
+
+    double minx = m.x - min(min_points1.d, min_points2.d);
+    double maxx = m.x + min(min_points1.d, min_points2.d);
+    ppd mind = min_points2;
+
+    if (min_points1.d < min_points2.d)
+    {
+        mind = min_points1;
+    }
+
+    int curr1 = mid;
+    while (curr1 >= f and array[curr1].x < maxx)
+    {
+        int curr2 = mid;
+        while (curr2 <= l and curr2 >= f and array[curr2].x > minx)
+        {
+            if (array[curr1].x != array[curr2].x and array[curr1].distance(array[curr2]) < mind.d)
+            {
+                mind = ppd(array[curr1], array[curr2]);
+            }
+            curr2 -= 1;
+        }
+        curr1 += 1;
+    }
+    //cout << mind.d << "\n";
+    return mind;
+}
+
+ppd brute_force()
 {
     double min = INT_MAX;
     Point a;
     Point b;
-    for (list<Point>::iterator i = ps.begin(); i != ps.end(); i++)
+    for (list<Point>::iterator i = ps.begin(); i != ps.end(); ++i)
     {
         for (list<Point>::iterator j = next(i); j != ps.end(); j++)
         {
@@ -120,19 +203,33 @@ pair<Point, Point> brute_force()
             }
         }
     }
-    pair<Point, Point> out;
     a.drawCircle(2.0 / 800.0, 2);
     b.drawCircle(2.0 / 800.0, 2);
     a.drawCircle(3.0 / 800.0, 2);
     b.drawCircle(3.0 / 800.0, 2);
-    out.first = a;
-    out.second = b;
+    ppd out = ppd(a, b);
     return out;
 }
-pair<Point, Point> merge_sort()
+ppd merge_sort()
 {
-    (ps.x).sort();
+
+    ps.sort(comp);
+    Point arr[ps.size()];
+    int k = 0;
+    for (Point const &i : ps)
+    {
+        arr[k++] = i;
+    }
+    ppd shortest = merge_helper(arr, 0, ps.size() - 1);
+    Point a = shortest.p1;
+    Point b = shortest.p2;
+    a.drawCircle(2.0 / 800.0, 2);
+    b.drawCircle(2.0 / 800.0, 2);
+    a.drawCircle(3.0 / 800.0, 2);
+    b.drawCircle(3.0 / 800.0, 2);
+    return shortest;
 }
+
 void arrToFile()
 {
     for (int i = 0; i < size; i++)
@@ -176,21 +273,24 @@ void arrToFile()
 }
 void part1()
 {
-    //gen_points();
+    gen_points(60);
     get_points();
     brute_force();
-    //pair<Point, Point> smalldist = brute_force();
+    ppd smalldist = brute_force();
+    cout << smalldist.d << "\n";
     arrToFile();
 }
 void part2()
 {
+    //gen_points();
     get_points();
-    merge_sort();
+    ppd smalldist = merge_sort();
     arrToFile();
+    cout << smalldist.d;
 }
 
 int main()
 {
-    //part1();
+    part1();
     part2();
 }
