@@ -91,7 +91,6 @@ void gen_points(int n)
     for (int i = 0; i < n; i++)
     {
         Point p = Point(rand() / double(RAND_MAX), rand() / double(RAND_MAX));
-        //ps.push_back(p);
 
         myfile << p.x << "  " << p.y << "\n";
     }
@@ -123,21 +122,21 @@ bool comp(Point a, Point b)
     }
     return a.x < b.x;
 }
-ppd merge_helper(Point array[], int const f, int const l)
+ppd merge_helper(vector<Point> array, int const f, int const l)
 {
-
     int mid = f + (l - f) / 2;
-    if (l - f == 2)
+    //cout << f << " " << l << "\n";
+    if (l - f == 1)
     {
         //cout << f << " " << l << "\n";
         //cout << ppd(array[f], array[l]).d << "\n";
         return ppd(array[f], array[l]);
     }
-    if (l - f == 3)
+    if (l - f == 2)
     {
         //cout << f << " " << l << "\n";
-        ppd pp1 = ppd(array[f], array[l]);
-        ppd pp2 = ppd(array[f + 1], array[l]);
+        ppd pp1 = ppd(array[f], array[f + 2]);
+        ppd pp2 = ppd(array[f + 1], array[f + 2]);
         ppd pp3 = ppd(array[f], array[f + 1]);
         if (pp1.d < pp2.d and pp1.d < pp3.d)
         {
@@ -156,7 +155,7 @@ ppd merge_helper(Point array[], int const f, int const l)
     Point m = array[mid];
     ppd min_points1 = merge_helper(array, f, mid);
     ppd min_points2 = min_points1;
-    min_points2 = merge_helper(array, mid, l);
+    min_points2 = merge_helper(array, mid + 1, l);
 
     double minx = m.x - min(min_points1.d, min_points2.d);
     double maxx = m.x + min(min_points1.d, min_points2.d);
@@ -168,7 +167,7 @@ ppd merge_helper(Point array[], int const f, int const l)
     }
 
     int curr1 = mid;
-    while (curr1 >= f and array[curr1].x < maxx)
+    while (curr1 >= f and curr1 <= l and array[curr1].x < maxx)
     {
         int curr2 = mid;
         while (curr2 <= l and curr2 >= f and array[curr2].x > minx)
@@ -190,7 +189,7 @@ ppd brute_force()
     double min = INT_MAX;
     Point a;
     Point b;
-    for (list<Point>::iterator i = ps.begin(); i != ps.end(); ++i)
+    for (list<Point>::iterator i = ps.begin(); i != ps.end(); i++)
     {
         for (list<Point>::iterator j = next(i); j != ps.end(); j++)
         {
@@ -214,13 +213,14 @@ ppd merge_sort()
 {
 
     ps.sort(comp);
-    Point arr[ps.size()];
-    int k = 0;
-    for (Point const &i : ps)
+    //Point arr[ps.size()];
+    vector<Point> v;
+    //int k = 0;
+    for (list<Point>::iterator i = ps.begin(); i != ps.end(); i++)
     {
-        arr[k++] = i;
+        v.push_back(*i);
     }
-    ppd shortest = merge_helper(arr, 0, ps.size() - 1);
+    ppd shortest = merge_helper(v, 0, ps.size() - 1);
     Point a = shortest.p1;
     Point b = shortest.p2;
     a.drawCircle(2.0 / 800.0, 2);
@@ -271,22 +271,57 @@ void arrToFile()
     }
     myfile.close();
 }
-void part1()
+ppd part1()
 {
+    ofstream r;
+    r.open("results.txt");
+    r << "Brute Force: \n";
+    cout << "Brute Force: \n";
     gen_points(60);
     get_points();
+    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     brute_force();
     ppd smalldist = brute_force();
     cout << smalldist.d << "\n";
+    r << "Points: (" << smalldist.p1.x << "," << smalldist.p1.y << ") & "
+      << "(" << smalldist.p2.x << "," << smalldist.p2.y << ")"
+      << "\n";
+    cout << "Points: (" << smalldist.p1.x << "," << smalldist.p1.y << ") & "
+         << "(" << smalldist.p2.x << "," << smalldist.p2.y << ")"
+         << "\n";
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
     arrToFile();
+    cout << "Distance: " << smalldist.d << "\n";
+    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
+    r << "Distance: " << smalldist.d << "\n";
+    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
+    return smalldist;
 }
-void part2()
+ppd part2()
 {
     //gen_points();
+    ofstream r;
+
+    r.open("results.txt", std::ios_base::app);
+    r << "\nIntermediary Recursive: \n";
+    cout << "\nIntermediary Recursive: \n";
     get_points();
+    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     ppd smalldist = merge_sort();
+    cout << smalldist.d << "\n";
+    r << "Points: (" << smalldist.p1.x << "," << smalldist.p1.y << ") & "
+      << "(" << smalldist.p2.x << "," << smalldist.p2.y << ")"
+      << "\n";
+    cout << "Points: (" << smalldist.p1.x << "," << smalldist.p1.y << ") & "
+         << "(" << smalldist.p2.x << "," << smalldist.p2.y << ")"
+         << "\n";
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    cout << "Distance: " << smalldist.d << "\n";
+    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
+    r << "Distance: " << smalldist.d << "\n";
+    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
     arrToFile();
-    cout << smalldist.d;
+    return smalldist;
 }
 
 int main()
