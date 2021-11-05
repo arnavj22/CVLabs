@@ -1,9 +1,10 @@
-Brute Force: 
-Points: (0.355857,0.89266) & (0.35788,0.897279)
-Distance: 0.00504325
-0 milliseconds
 
 Intermediary Recursive: 
-Points: (0.35788,0.897279) & (0.355857,0.89266)
-Distance: 0.00504325
+Points: (0.536905,0.7659) & (0.537322,0.764811)
+Distance: 0.00116617
+0 milliseconds
+
+Recursive: 
+Points: (0.536905,0.7659) & (0.537322,0.764811)
+Distance: 0.00116617
 0 milliseconds
