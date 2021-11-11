@@ -1,0 +1,10 @@
+Intermediary Recursive (9999 points): 
+Points: (0.209584,0.471176) & (0.209643,0.471222)
+Distance: 7.49883e-05
+35 milliseconds
+
+Complete Recursive (9999 points): 
+Points: (0.209643,0.471222) & (0.209584,0.471176)
+Distance: 7.49883e-05
+41 milliseconds
+

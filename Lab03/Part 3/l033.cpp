@@ -1,4 +1,14 @@
-#include "bits/stdc++.h"
+#include <stdio.h>
+#include <algorithm>
+#include <list>
+#include <iterator>
+#include <chrono>
+#include <climits>
+#include <fstream>
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
 
 using namespace std;
 const int size = 800;
@@ -133,7 +143,7 @@ void get_points()
             double y = stod(line.substr(pos));
             //cout << x << " " << y;
             Point p = Point(x, y);
-            p.drawCircle(3.0 / 800.0);
+            //p.drawCircle(3.0 / 800.0);
             ps.push_back(p);
         }
     }
@@ -154,19 +164,49 @@ bool compy(Point a, Point b)
     }
     return a.gety() < b.gety();
 }
-ppd merge_helper(vector<Point> array, int const f, int const l)
+void toFile(ppd smalldist, chrono::steady_clock::time_point begin, chrono::steady_clock::time_point end, int method)
+{
+    ofstream r;
+    if (method == 0)
+    {
+        r.open("results.txt");
+        r << "Brute Force";
+        cout << "Brute Force";
+    }
+    else if (method == 1)
+    {
+        r.open("results.txt");
+        r << "Intermediary Recursive";
+        cout << "Intermediary Recursive";
+    }
+    else if (method == 2)
+    {
+        r.open("results.txt", std::ios_base::app);
+        r << "Complete Recursive";
+        cout << "Complete Recursive";
+    }
+    r << " (" << ps.size() - 1 << " points): \n";
+    r << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
+      << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
+      << "\n";
+    r << "Distance: " << smalldist.getd() << "\n";
+    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n\n";
+    cout << " (" << ps.size() << " points): \n";
+    cout << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
+         << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
+         << "\n";
+    cout << "Distance: " << smalldist.getd() << "\n";
+    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n\n";
+}
+ppd merge_helper(vector<Point> &array, int const f, int const l)
 {
     int mid = f + (l - f) / 2;
-    //cout << f << " " << l << "\n";
     if (l - f == 1)
     {
-        //cout << f << " " << l << "\n";
-        //cout << ppd(array[f], array[l]).d << "\n";
         return ppd(array[f], array[l]);
     }
     if (l - f == 2)
     {
-        //cout << f << " " << l << "\n";
         ppd pp1 = ppd(array[f], array[f + 2]);
         ppd pp2 = ppd(array[f + 1], array[f + 2]);
         ppd pp3 = ppd(array[f], array[f + 1]);
@@ -186,9 +226,9 @@ ppd merge_helper(vector<Point> array, int const f, int const l)
 
     Point m = array[mid];
     ppd min_points1 = merge_helper(array, f, mid);
-    ppd min_points2 = min_points1;
-    min_points2 = merge_helper(array, mid + 1, l);
-
+    ppd min_points2 = merge_helper(array, mid + 1, l);
+    vector<Point> left_points = vector<Point>();
+    vector<Point> right_points = vector<Point>();
     double minx = m.getx() - min(min_points1.getd(), min_points2.getd());
     double maxx = m.getx() + min(min_points1.getd(), min_points2.getd());
     ppd mind = min_points2;
@@ -197,25 +237,47 @@ ppd merge_helper(vector<Point> array, int const f, int const l)
     {
         mind = min_points1;
     }
-
-    int curr1 = mid;
-    while (curr1 >= f and curr1 <= l and array[curr1].getx() < maxx)
+    int upperbound = mid + 1;
+    int lowerbound = mid;
+    while (upperbound >= f and upperbound <= l and array[upperbound].getx() < maxx)
     {
-        int curr2 = mid;
-        while (curr2 <= l and curr2 >= f and array[curr2].getx() > minx)
-        {
-            if (array[curr1].getx() != array[curr2].getx() and array[curr1].distance(array[curr2]) < mind.getd())
-            {
-                mind = ppd(array[curr1], array[curr2]);
-            }
-            curr2 -= 1;
-        }
-        curr1 += 1;
+        right_points.push_back(array[upperbound]);
+        upperbound += 1;
     }
+    while (lowerbound <= l and lowerbound >= f and array[lowerbound].getx() > minx)
+    {
+        left_points.push_back(array[lowerbound]);
+        lowerbound -= 1;
+    }
+    for (int i = 0; i < left_points.size(); i++)
+    {
+        for (int j = 0; j < right_points.size(); j++)
+        {
+            ppd pointpair = ppd(left_points[i], right_points[j]);
+            if (pointpair.getd() < mind.getd())
+            {
+                mind = pointpair;
+            }
+        }
+    }
+    // int curr1 = mid;
+    // while (curr1 >= f and curr1 <= l and array[curr1].getx() < maxx)
+    // {
+    //     int curr2 = mid;
+    //     while (curr2 <= l and curr2 >= f and array[curr2].getx() > minx)
+    //     {
+    //         if (array[curr1].getx() != array[curr2].getx() and array[curr1].distance(array[curr2]) < mind.getd())
+    //         {
+    //             mind = ppd(array[curr1], array[curr2]);
+    //         }
+    //         curr2 -= 1;
+    //     }
+    //     curr1 += 1;
+    // }
     //cout << mind.d << "\n";
     return mind;
 }
-ppd merge_helper_v2(vector<Point> array, int const f, int const l)
+ppd merge_helper_v2(vector<Point> &array, int const f, int const l)
 {
     int mid = f + (l - f) / 2;
     //cout << f << " " << l << "\n";
@@ -223,7 +285,7 @@ ppd merge_helper_v2(vector<Point> array, int const f, int const l)
     {
         //cout << f << " " << l << "\n";
         //cout << ppd(array[f], array[l]).d << "\n";
-        return ppd(array[f], array[l]);
+        return ppd(array[f], array[f + 1]);
     }
     if (l - f == 2)
     {
@@ -247,17 +309,15 @@ ppd merge_helper_v2(vector<Point> array, int const f, int const l)
 
     Point m = array[mid];
     ppd min_points1 = merge_helper_v2(array, f, mid);
-    ppd min_points2 = min_points1;
-    min_points2 = merge_helper_v2(array, mid + 1, l);
-
-    double minx = m.getx() - min(min_points1.getd(), min_points2.getd());
-    double maxx = m.getx() + min(min_points1.getd(), min_points2.getd());
+    ppd min_points2 = merge_helper_v2(array, mid + 1, l);
     ppd mind = min_points2;
 
     if (min_points1.getd() < min_points2.getd())
     {
         mind = min_points1;
     }
+    double minx = m.getx() - mind.getd();
+    double maxx = m.getx() + mind.getd();
 
     int upperbound = mid;
     int lowerbound = mid;
@@ -269,8 +329,28 @@ ppd merge_helper_v2(vector<Point> array, int const f, int const l)
     {
         lowerbound -= 1;
     }
-    vector<int> subvector = {array.begin() + lowerbound, array.begin() + upperbound};
+    vector<Point> subvector = vector<Point>();
+    for (int i = lowerbound; i <= upperbound; i++)
+    {
+        subvector.push_back(array[i]);
+    }
     sort(subvector.begin(), subvector.end(), compy);
+    for (int i = 0; i < subvector.size(); i++)
+    {
+        int j = i + 1;
+        for (int k = j; k < 16; k++)
+        {
+            if (subvector[k].gety() - subvector[i].gety() > mind.getd())
+            {
+                break;
+            }
+            if (subvector[k].getx() != m.getx() and subvector[k].distance(subvector[i]) < mind.getd())
+            {
+                mind = ppd(subvector[k], m);
+            }
+        }
+        //i = j - 1;
+    }
     //cout << mind.d << "\n";
     return mind;
 }
@@ -302,7 +382,6 @@ ppd brute_force()
 ppd merge_sort()
 {
 
-    ps.sort(comp);
     //Point arr[ps.size()];
     vector<Point> v;
     //int k = 0;
@@ -311,18 +390,17 @@ ppd merge_sort()
         v.push_back(*i);
     }
     ppd shortest = merge_helper(v, 0, ps.size() - 1);
-    Point a = shortest.getp1();
-    Point b = shortest.getp2();
-    a.drawCircle(2.0 / 800.0, 2);
-    b.drawCircle(2.0 / 800.0, 2);
-    a.drawCircle(3.0 / 800.0, 2);
-    b.drawCircle(3.0 / 800.0, 2);
+    // Point a = shortest.getp1();
+    // Point b = shortest.getp2();
+    // a.drawCircle(2.0 / 800.0, 2);
+    // b.drawCircle(2.0 / 800.0, 2);
+    // a.drawCircle(3.0 / 800.0, 2);
+    // b.drawCircle(3.0 / 800.0, 2);
     return shortest;
 }
 ppd merge_sort_v2()
 {
 
-    ps.sort(comp);
     //Point arr[ps.size()];
     vector<Point> v;
     //int k = 0;
@@ -331,15 +409,14 @@ ppd merge_sort_v2()
         v.push_back(*i);
     }
     ppd shortest = merge_helper_v2(v, 0, ps.size() - 1);
-    Point a = shortest.getp1();
-    Point b = shortest.getp2();
-    a.drawCircle(2.0 / 800.0, 2);
-    b.drawCircle(2.0 / 800.0, 2);
-    a.drawCircle(3.0 / 800.0, 2);
-    b.drawCircle(3.0 / 800.0, 2);
+    // Point a = shortest.getp1();
+    // Point b = shortest.getp2();
+    //a.drawCircle(2.0 / 800.0, 2);
+    //b.drawCircle(2.0 / 800.0, 2);
+    //a.drawCircle(3.0 / 800.0, 2);
+    //b.drawCircle(3.0 / 800.0, 2);
     return shortest;
 }
-
 void arrToFile()
 {
     for (int i = 0; i < size; i++)
@@ -383,79 +460,42 @@ void arrToFile()
 }
 ppd part1()
 {
-    ofstream r;
-    r.open("results.txt");
-    r << "Brute Force: \n";
-    cout << "Brute Force: \n";
     gen_points(60);
     get_points();
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
-    brute_force();
     ppd smalldist = brute_force();
-    cout << smalldist.getd() << "\n";
-    r << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-      << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-      << "\n";
-    cout << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-         << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-         << "\n";
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
-    arrToFile();
-    cout << "Distance: " << smalldist.getd() << "\n";
-    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
-    r << "Distance: " << smalldist.getd() << "\n";
-    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
+    toFile(smalldist, begin, end, 0);
+    //arrToFile();
     return smalldist;
 }
 ppd part2()
 {
-    //gen_points();
-    ofstream r;
+    gen_points(10000);
 
-    r.open("results.txt");
-    r << "\nIntermediary Recursive: \n";
-    cout << "\nIntermediary Recursive: \n";
     get_points();
+
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+    ps.sort(comp);
     ppd smalldist = merge_sort();
-    cout << smalldist.getd() << "\n";
-    r << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-      << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-      << "\n";
-    cout << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-         << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-         << "\n";
+
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
-    cout << "Distance: " << smalldist.getd() << "\n";
-    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
-    r << "Distance: " << smalldist.getd() << "\n";
-    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
-    arrToFile();
+    toFile(smalldist, begin, end, 1);
+
+    //arrToFile();
     return smalldist;
 }
 ppd part3()
 {
-    ofstream r;
 
-    r.open("results.txt", std::ios_base::app);
-    r << "\nRecursive: \n";
-    cout << "\nRecursive: \n";
     get_points();
+
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+    ps.sort(comp);
     ppd smalldist = merge_sort_v2();
-    cout << smalldist.getd() << "\n";
-    r << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-      << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-      << "\n";
-    cout << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
-         << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
-         << "\n";
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
-    cout << "Distance: " << smalldist.getd() << "\n";
-    cout << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
-    r << "Distance: " << smalldist.getd() << "\n";
-    r << chrono::duration_cast<chrono::milliseconds>(end - begin).count() << " milliseconds\n";
-    arrToFile();
+    toFile(smalldist, begin, end, 2);
+    //arrToFile();
     return smalldist;
 }
 
