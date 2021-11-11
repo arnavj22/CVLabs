@@ -471,7 +471,7 @@ ppd part1()
 }
 ppd part2()
 {
-    gen_points(10000);
+    gen_points(1000000);
 
     get_points();
 
