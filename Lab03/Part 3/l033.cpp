@@ -167,6 +167,8 @@ bool compy(Point a, Point b)
 void toFile(ppd smalldist, chrono::steady_clock::time_point begin, chrono::steady_clock::time_point end, int method)
 {
     ofstream r;
+    r << setprecision(23) << fixed;
+    cout << setprecision(23) << fixed;
     if (method == 0)
     {
         r.open("results.txt");
@@ -316,16 +318,17 @@ ppd merge_helper_v2(vector<Point> &array, int const f, int const l)
     {
         mind = min_points1;
     }
+
     double minx = m.getx() - mind.getd();
     double maxx = m.getx() + mind.getd();
 
     int upperbound = mid;
     int lowerbound = mid;
-    while (upperbound >= f and upperbound <= l and array[upperbound].getx() < maxx)
+    while (upperbound > f and upperbound < l and array[upperbound].getx() < maxx)
     {
         upperbound += 1;
     }
-    while (lowerbound <= l and lowerbound >= f and array[lowerbound].getx() > minx)
+    while (lowerbound < l and lowerbound > f and array[lowerbound].getx() > minx)
     {
         lowerbound -= 1;
     }
@@ -338,15 +341,15 @@ ppd merge_helper_v2(vector<Point> &array, int const f, int const l)
     for (int i = 0; i < subvector.size(); i++)
     {
         int j = i + 1;
-        for (int k = j; k < 16; k++)
+        for (int k = j; k <= j + 16 and k < subvector.size(); k++)
         {
             if (subvector[k].gety() - subvector[i].gety() > mind.getd())
             {
                 break;
             }
-            if (subvector[k].getx() != m.getx() and subvector[k].distance(subvector[i]) < mind.getd())
+            if (subvector[k].distance(subvector[i]) < mind.getd())
             {
-                mind = ppd(subvector[k], m);
+                mind = ppd(subvector[k], subvector[i]);
             }
         }
         //i = j - 1;
@@ -471,7 +474,7 @@ ppd part1()
 }
 ppd part2()
 {
-    gen_points(1000000);
+    //gen_points(500000);
 
     get_points();
 
