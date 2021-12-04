@@ -39,11 +39,11 @@ public:
         x = 0;
         y = 0;
     };
-    double getx() const
+    double getx()
     {
         return x;
     }
-    double gety() const
+    double gety()
     {
         return y;
     }
@@ -85,10 +85,6 @@ public:
             set_pixel(-y + a, -x + b, c);
             y2_new -= (2 * x) - 3;
         }
-    };
-    bool operator==(const Point &p) const
-    {
-        return p.getx() == x && p.gety() == y;
     };
 };
 class LongPoint
@@ -166,6 +162,7 @@ public:
 };
 
 list<Point> ps;
+vector<Point> vs;
 void gen_points(int n)
 {
     ofstream myfile;
@@ -185,6 +182,7 @@ void gen_points(int n)
 void get_points()
 {
     ps.clear();
+    vs.clear();
     string line;
     ifstream po("points.txt");
     if (po.is_open())
@@ -198,6 +196,7 @@ void get_points()
             Point p = Point(x, y);
             //p.drawCircle(3.0 / 800.0);
             ps.push_back(p);
+            vs.push_back(p);
         }
     }
 }
@@ -479,12 +478,14 @@ ppd merge_sort_v2()
     //b.drawCircle(3.0 / 800.0, 2);
     return shortest;
 }
-vector<Point> randomize(list<Point> p)
+vector<Point> randomize(vector<Point> v)
 {
-    vector<Point> v;
-    for (list<Point>::iterator i = p.begin(); i != p.end(); i++)
+    for (int k = 0; k < v.size() - k; k++)
     {
-        v.push_back(*i);
+        long long j = k + rand() % (v.size() - k);
+        Point temp = v[k];
+        v[k] = v[j];
+        v[j] = temp;
     }
     for (int k = 0; k < v.size() - k; k++)
     {
@@ -495,18 +496,18 @@ vector<Point> randomize(list<Point> p)
     }
     return v;
 }
-ppd small4()
+ppd small4(vector<Point> &v)
 {
     int remap = 0;
-    vector<Point> v = randomize(ps);
+    //vector<Point> v = randomize(ps);
     unordered_map<LongPoint, Point, MyHashFunction> mapper;
-    Point a = v[0];
-    Point b = v[1];
-    Point smallest1 = Point();
-    Point smallest2 = Point();
+    Point &a = v[0];
+    Point &b = v[1];
+    Point smallest1 = a;
+    Point smallest2 = b;
     double delta = a.distance(b);
-    long long xcoord = a.getx() / (delta / 2);
-    long long ycoord = a.gety() / (delta / 2);
+    long long xcoord = (long long)a.getx() / (delta / 2);
+    long long ycoord = (long long)a.gety() / (delta / 2);
     mapper[LongPoint(xcoord, ycoord)] = a;
     xcoord = b.getx() / (delta / 2);
     ycoord = b.gety() / (delta / 2);
@@ -515,9 +516,9 @@ ppd small4()
     {
         double lowdist = delta;
         bool enteredLoop = false;
-        Point p = v[i];
-        xcoord = p.getx() / (delta / 2);
-        ycoord = p.gety() / (delta / 2);
+        Point &p = v[i];
+        xcoord = (long long)(p.getx() / (delta / 2));
+        ycoord = (long long)(p.gety() / (delta / 2));
         for (int k = -2; k <= 2; k++)
         {
             for (int j = -2; j <= 2; j++)
@@ -624,9 +625,8 @@ ppd part2()
 }
 ppd part3()
 {
-    gen_points(10000);
+    gen_points(100000);
     get_points();
-
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     ps.sort(comp);
     ppd smalldist = merge_sort_v2();
@@ -639,8 +639,8 @@ ppd part4()
 {
     get_points();
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
-
-    ppd smalldist = small4();
+    vector<Point> v = randomize(vs);
+    ppd smalldist = small4(v);
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
     toFile(smalldist, begin, end, 3);
     //arrToFile();
