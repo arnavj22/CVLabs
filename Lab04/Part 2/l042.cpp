@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const int size = 800;
+const int size = 400;
 int (*result)[size] = new int[size][size];
 int (*ppm)[size] = new int[size * 3][size];
 void set_pixel(int x, int y, int c = 1)
@@ -16,9 +16,11 @@ void set_pixel(int x, int y, int c = 1)
 
 class Point
 {
-public:
+private:
     double x;
     double y;
+
+public:
     Point(double x1, double y1)
     {
         x = x1;
@@ -29,6 +31,14 @@ public:
         x = 0;
         y = 0;
     };
+    double getx()
+    {
+        return x;
+    }
+    double gety()
+    {
+        return y;
+    }
     void plot()
     {
         set_pixel(x, y);
@@ -37,9 +47,9 @@ public:
     { // 1 = black, 2 = red
         double a1 = x;
         double b1 = y;
-        int a = a1 * 800;
-        int b = b1 * 800;
-        int radius = radius1 * 800;
+        int a = a1 * size;
+        int b = b1 * size;
+        int radius = radius1 * size;
         int xmax = (int)(radius * 0.70710678);
         int y = radius;
         int y2 = y * y;
@@ -82,14 +92,14 @@ public:
     };
     void drawLine()
     {
-        double x1d = p1.x;
-        double y1d = p1.y;
-        double x2d = p2.x;
-        double y2d = p2.y;
-        int x1 = x1d * 800;
-        int y1 = y1d * 800;
-        int x2 = x2d * 800;
-        int y2 = y2d * 800;
+        double x1d = p1.getx();
+        double y1d = p1.gety();
+        double x2d = p2.getx();
+        double y2d = p2.gety();
+        int x1 = x1d * size;
+        int y1 = y1d * size;
+        int x2 = x2d * size;
+        int y2 = y2d * size;
         int dx = x2 - x1;
         int dy = y2 - y1;
 
@@ -169,56 +179,56 @@ public:
     }
     void drawLineExtended()
     {
-        if (p1.x - p2.x == 0)
+        if (p1.getx() - p2.getx() == 0)
         {
             drawLine();
         }
         else
         {
-            double slope = (p2.y - p1.y) / (p2.x - p1.x);
-            double point1y = slope * 0 - (slope * p1.x) + p1.y;
-            double point2y = slope * 0.99 - (slope * p1.x) + p1.y;
+            double slope = (p2.gety() - p1.gety()) / (p2.getx() - p1.getx());
+            double point1y = slope * 0 - (slope * p1.getx()) + p1.gety();
+            double point2y = slope * 0.99 - (slope * p1.getx()) + p1.gety();
             Line(Point(0, point1y), Point(0.99, point2y)).drawLine();
         }
     }
     vector<Point> findPoint(double d, Point p)
     { // finds a point d distance away from a point on a line
         vector<Point> o;
-        double dy = p2.y - p1.y;
-        double dx = p2.x - p1.x;
+        double dy = p2.gety() - p1.gety();
+        double dx = p2.getx() - p1.getx();
         double magnitude = sqrt(pow(dx, 2) + pow(dy, 2));
         dy = dy / magnitude;
         dx = dx / magnitude;
-        o.push_back(Point(p.x + (dx * d), p.y + (dy * d)));
-        o.push_back(Point(p.x - (dx * d), p.y - (dy * d)));
+        o.push_back(Point(p.getx() + (dx * d), p.gety() + (dy * d)));
+        o.push_back(Point(p.getx() - (dx * d), p.gety() - (dy * d)));
         return o;
     }
     Line findPerp(Point p)
     { // finds the perpendicular to a line given a point p
-        double dy = -1 * (p2.x - p1.x);
-        double dx = p2.y - p1.y;
+        double dy = -1 * (p2.getx() - p1.getx());
+        double dx = p2.gety() - p1.gety();
         double magnitude = sqrt(pow(dx, 2) + pow(dy, 2));
         dy = 20 * dy / magnitude;
         dx = 20 * dx / magnitude;
-        Point o = Point(p.x + (dx), p.y + (dy));
+        Point o = Point(p.getx() + (dx), p.gety() + (dy));
         return Line(p, o);
     }
     vector<double> getEq()
     {
         vector<double> v;
-        double dx = p2.x - p1.x;
-        double dy = p2.y - p1.y;
+        double dx = p2.getx() - p1.getx();
+        double dy = p2.gety() - p1.gety();
         if (dx == 0)
         {
             v.push_back(1);
             v.push_back(0);
-            v.push_back(p1.x);
+            v.push_back(p1.getx());
             return v;
         }
         double m = dy / dx;
         v.push_back(-1 * m);
         v.push_back(1);
-        v.push_back((-1 * m * p1.x) + p1.y);
+        v.push_back((-1 * m * p1.getx()) + p1.gety());
 
         return v;
     }
@@ -238,7 +248,7 @@ public:
     }
     double distance()
     {
-        return sqrt(pow((p1.x - p2.x), 2) + pow((p1.y - p2.y), 2));
+        return sqrt(pow((p1.getx() - p2.getx()), 2) + pow((p1.gety() - p2.gety()), 2));
     }
 };
 vector<Point> vs;
@@ -276,6 +286,19 @@ void get_points()
             vs.push_back(p);
         }
     }
+}
+int get_side(Point p1, Point p2, Point p)
+{
+    double val = (p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx());
+    if (val > 0.0)
+        return 1;
+    if (val < 0.0)
+        return -1;
+    return 0;
+}
+double l_dist(Point p1, Point p2, Point p)
+{
+    return abs((p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx()));
 }
 void arrToFile()
 {
@@ -318,9 +341,61 @@ void arrToFile()
     }
     myfile.close();
 }
+
+void quickhull(Point p1, Point p2, int side)
+{
+    int ind = -1;
+    double max_distance = 0;
+
+    for (int i = 0; i < vs.size(); i++)
+    {
+        double temp = l_dist(p1, p2, vs[i]);
+        if (get_side(p1, p2, vs[i]) == side && temp > max_distance)
+        {
+            ind = i;
+            max_distance = temp;
+        }
+    }
+
+    if (ind == -1)
+    {
+        Line(p1, p2).drawLine();
+        return;
+    }
+
+    quickhull(vs[ind], p1, -get_side(vs[ind], p1, p2));
+    quickhull(vs[ind], p2, -get_side(vs[ind], p2, p1));
+}
+void part1()
+{
+    gen_points(60);
+    get_points();
+    //recursive method to find convex hull using QuickHull method
+    //find the leftmost point
+    int leftmost = 0;
+    for (int i = 1; i < vs.size(); i++)
+    {
+        if (vs[i].getx() < vs[leftmost].getx())
+        {
+            leftmost = i;
+        }
+    }
+    //find the rightmost point
+    int rightmost = 0;
+    for (int i = 1; i < vs.size(); i++)
+    {
+        if (vs[i].getx() > vs[rightmost].getx())
+        {
+            rightmost = i;
+        }
+    }
+    quickhull(vs[leftmost], vs[rightmost], 1);
+    quickhull(vs[leftmost], vs[rightmost], -1);
+    arrToFile();
+}
 int orientation(Point p1, Point p2, Point p)
 {
-    double val = (p2.y - p1.y) * (p.x - p2.x) - (p2.x - p1.x) * (p.y - p2.y);
+    double val = (p2.gety() - p1.gety()) * (p.getx() - p2.getx()) - (p2.getx() - p1.getx()) * (p.gety() - p2.gety());
     if (val == 0)
         return 0;             // colinear
     return (val > 0) ? 1 : 2; // clock or counterclock wise
@@ -328,14 +403,13 @@ int orientation(Point p1, Point p2, Point p)
 void part2()
 {
     //recursive function to find a convex hull gien a set of points
-    gen_points(60);
     get_points();
     vector<Point> points = vs;
     vector<Point> hull;
     int start = 0;
     for (int i = 1; i < points.size(); i++)
     {
-        if (points[i].y < points[start].y)
+        if (points[i].gety() < points[start].gety())
         {
             start = i;
         }
@@ -347,7 +421,7 @@ void part2()
         q = (p + 1) % points.size();
         for (int i = 0; i < points.size(); i++)
         {
-            if (orie ntation(points[p], points[i], points[q]) == 2)
+            if (orientation(points[p], points[i], points[q]) == 2)
             {
                 q = i;
             }
@@ -358,11 +432,11 @@ void part2()
     for (int i = 0; i < hull.size(); i++)
     {
         hull[i].drawCircle(3.0 / 800.0, 2);
-        cout << hull[i].x << " " << hull[i].y << endl;
     }
     arrToFile();
 }
 int main()
 {
     part1();
+    part2();
 }
