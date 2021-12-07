@@ -347,7 +347,7 @@ void part1()
         q = (p + 1) % points.size();
         for (int i = 0; i < points.size(); i++)
         {
-            if (orientation(points[p], points[i], points[q]) == 2)
+            if (orie ntation(points[p], points[i], points[q]) == 2)
             {
                 q = i;
             }
