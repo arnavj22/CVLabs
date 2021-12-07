@@ -235,7 +235,7 @@ void toFile(ppd smalldist, chrono::steady_clock::time_point begin, chrono::stead
     }
     else if (method == 2)
     {
-        r.open("results.txt", std::ios_base::app);
+        r.open("results.txt");
         r << "Complete Recursive";
         cout << "Complete Recursive";
     }
@@ -245,7 +245,7 @@ void toFile(ppd smalldist, chrono::steady_clock::time_point begin, chrono::stead
         r << "Linear Method";
         cout << "Linear Method";
     }
-    r << " (" << ps.size() - 1 << " points): \n";
+    r << " (" << ps.size() << " points): \n";
     r << "Points: (" << smalldist.getp1().getx() << "," << smalldist.getp1().gety() << ") & "
       << "(" << smalldist.getp2().getx() << "," << smalldist.getp2().gety() << ")"
       << "\n";
@@ -552,7 +552,7 @@ ppd small4(vector<Point> &v)
             mapper[LongPoint(xcoord, ycoord)] = p;
         }
     }
-    cout << remap << "\n";
+    //cout << remap << "\n";
     return ppd(smallest1, smallest2);
 }
 void arrToFile()
@@ -625,7 +625,7 @@ ppd part2()
 }
 ppd part3()
 {
-    gen_points(100000);
+    //gen_points(100000);
     get_points();
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
     ps.sort(comp);
