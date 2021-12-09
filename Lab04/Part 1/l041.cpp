@@ -1,4 +1,14 @@
-#include "bits/stdc++.h"
+#include <stdio.h>
+#include <algorithm>
+#include <list>
+#include <iterator>
+#include <chrono>
+#include <climits>
+#include <fstream>
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
 
 using namespace std;
 
@@ -287,19 +297,20 @@ void get_points()
         }
     }
 }
-int get_side(Point p1, Point p2, Point p)
+double dist(Point p1, Point p2, Point p)
 {
-    double val = (p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx());
-    if (val > 0.0)
+    return (p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx());
+}
+int getside(Point p1, Point p2, Point p)
+{
+    double val = dist(p1, p2, p);
+    if (val > 0)
         return 1;
-    if (val < 0.0)
+    if (val < 0)
         return -1;
     return 0;
 }
-double l_dist(Point p1, Point p2, Point p)
-{
-    return abs((p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx()));
-}
+
 void arrToFile()
 {
     for (int i = 0; i < size; i++)
@@ -344,27 +355,26 @@ void arrToFile()
 
 void quickhull(Point p1, Point p2, int side)
 {
-    int ind = -1;
-    double max_distance = 0;
+    int index = -1;
+    double max = 0;
 
     for (int i = 0; i < vs.size(); i++)
     {
-        double temp = l_dist(p1, p2, vs[i]);
-        if (get_side(p1, p2, vs[i]) == side && temp > max_distance)
+        double d = abs(dist(p1, p2, vs[i]));
+        if (getside(p1, p2, vs[i]) == side && d > max)
         {
-            ind = i;
-            max_distance = temp;
+            index = i;
+            max = d;
         }
     }
 
-    if (ind == -1)
+    if (index == -1)
     {
         Line(p1, p2).drawLine();
         return;
     }
-
-    quickhull(vs[ind], p1, -get_side(vs[ind], p1, p2));
-    quickhull(vs[ind], p2, -get_side(vs[ind], p2, p1));
+    quickhull(vs[index], p2, -getside(vs[index], p2, p1));
+    quickhull(vs[index], p1, -getside(vs[index], p1, p2));
 }
 void part1()
 {
