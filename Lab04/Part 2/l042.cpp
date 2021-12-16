@@ -19,6 +19,7 @@ class Point
 private:
     double x;
     double y;
+    double theta;
 
 public:
     Point(double x1, double y1)
@@ -38,6 +39,19 @@ public:
     double gety()
     {
         return y;
+    }
+    double settheta(Point p1)
+    {
+        theta = atan2(y - p1.gety(), x - p1.getx());
+        if (theta < 0)
+        {
+            theta += M_PI;
+        }
+        return theta;
+    }
+    double gettheta()
+    {
+        return theta;
     }
     void plot()
     {
@@ -90,7 +104,7 @@ public:
         p1 = Point();
         p2 = Point();
     };
-    void drawLine()
+    void drawLine(int color = 1)
     {
         double x1d = p1.getx();
         double y1d = p1.gety();
@@ -122,7 +136,7 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    set_pixel(i, j);
+                    set_pixel(i, j, color);
                     if (c > 0)
                     {
                         j -= 1;
@@ -135,7 +149,7 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    set_pixel(i, j);
+                    set_pixel(i, j, color);
                     if (c > 0)
                     {
                         j += 1;
@@ -153,7 +167,7 @@ public:
             {
                 for (int i = y1; i > y2; i--)
                 {
-                    set_pixel(j, i);
+                    set_pixel(j, i, color);
                     if (c > 0)
                     {
                         j += 1;
@@ -166,7 +180,7 @@ public:
             {
                 for (int i = y1; i < y2; i++)
                 {
-                    set_pixel(j, i);
+                    set_pixel(j, i, color);
                     if (c > 0)
                     {
                         j += 1;
@@ -280,7 +294,7 @@ void get_points()
             int pos = line.find(" ");
             double x = stod(line.substr(0, pos));
             double y = stod(line.substr(pos));
-            //cout << x << " " << y;
+            // cout << x << " " << y;
             Point p = Point(x, y);
             p.drawCircle(3.0 / 800.0);
             vs.push_back(p);
@@ -341,7 +355,6 @@ void arrToFile()
     }
     myfile.close();
 }
-
 void quickhull(Point p1, Point p2, int side)
 {
     int ind = -1;
@@ -370,8 +383,8 @@ void part1()
 {
     gen_points(60);
     get_points();
-    //recursive method to find convex hull using QuickHull method
-    //find the leftmost point
+    // recursive method to find convex hull using QuickHull method
+    // find the leftmost point
     int leftmost = 0;
     for (int i = 1; i < vs.size(); i++)
     {
@@ -380,7 +393,7 @@ void part1()
             leftmost = i;
         }
     }
-    //find the rightmost point
+    // find the rightmost point
     int rightmost = 0;
     for (int i = 1; i < vs.size(); i++)
     {
@@ -397,42 +410,55 @@ int orientation(Point p1, Point p2, Point p)
 {
     double val = (p2.gety() - p1.gety()) * (p.getx() - p2.getx()) - (p2.getx() - p1.getx()) * (p.gety() - p2.gety());
     if (val == 0)
-        return 0;             // colinear
-    return (val > 0) ? 1 : 2; // clock or counterclock wise
+        return 0;              // colinear
+    return (val > 0) ? 1 : -1; // clock or counterclock wise
+}
+bool compare_theta(Point p1, Point p2)
+{
+    return p1.gettheta() < p2.gettheta();
 }
 void part2()
 {
-    //recursive function to find a convex hull gien a set of points
     get_points();
     vector<Point> points = vs;
     vector<Point> hull;
-    int start = 0;
+    double miny = points[0].gety();
+    int minp = 0;
+    for (int i = 0; i < points.size(); i++)
+    {
+        if (points[i].gety() < miny)
+        {
+            miny = points[i].gety();
+            minp = i;
+        }
+    }
+    Point temp = points[minp];
+    points[minp] = points[0];
+    points[0] = temp;
+    hull.push_back(points[0]);
     for (int i = 1; i < points.size(); i++)
     {
-        if (points[i].gety() < points[start].gety())
-        {
-            start = i;
-        }
+        points[i].settheta(points[0]);
     }
-    int p = start;
-    int q;
-    do
+    sort(points.begin() + 1, points.end(), compare_theta);
+
+    for (int i = 1; i < points.size(); i++)
     {
-        q = (p + 1) % points.size();
-        for (int i = 0; i < points.size(); i++)
+        while (hull.size() > 2 && orientation(hull[hull.size() - 2], hull[hull.size() - 1], points[i]) != -1)
         {
-            if (orientation(points[p], points[i], points[q]) == 2)
-            {
-                q = i;
-            }
+            hull.pop_back();
         }
-        hull.push_back(points[q]);
-        p = q;
-    } while (p != start);
+        hull.push_back(points[i]);
+    }
     for (int i = 0; i < hull.size(); i++)
     {
+        if (i != 0)
+        {
+            Line(hull[i], hull[i - 1]).drawLine(2);
+        }
         hull[i].drawCircle(3.0 / 800.0, 2);
     }
+    Line(hull[0], hull[hull.size() - 1]).drawLine(2);
     arrToFile();
 }
 int main()
