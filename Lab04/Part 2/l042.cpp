@@ -314,7 +314,7 @@ double l_dist(Point p1, Point p2, Point p)
 {
     return abs((p.gety() - p1.gety()) * (p2.getx() - p1.getx()) - (p2.gety() - p1.gety()) * (p.getx() - p1.getx()));
 }
-void arrToFile()
+void arrToFile(string filename)
 {
     for (int i = 0; i < size; i++)
     {
@@ -341,7 +341,7 @@ void arrToFile()
         }
     }
     ofstream myfile;
-    myfile.open("points.ppm");
+    myfile.open(filename);
     myfile << "P3 " << size << " " << size << " 1\n";
     for (int j = 0; j < size; j++)
     {
@@ -404,7 +404,7 @@ void part1()
     }
     quickhull(vs[leftmost], vs[rightmost], 1);
     quickhull(vs[leftmost], vs[rightmost], -1);
-    arrToFile();
+    arrToFile("quickhull.ppm");
 }
 int orientation(Point p1, Point p2, Point p)
 {
@@ -421,7 +421,7 @@ void part2()
 {
     get_points();
     vector<Point> points = vs;
-    vector<Point> hull;
+    stack<Point> hull;
     double miny = points[0].gety();
     int minp = 0;
     for (int i = 0; i < points.size(); i++)
@@ -435,7 +435,7 @@ void part2()
     Point temp = points[minp];
     points[minp] = points[0];
     points[0] = temp;
-    hull.push_back(points[0]);
+    hull.push(points[0]);
     for (int i = 1; i < points.size(); i++)
     {
         points[i].settheta(points[0]);
@@ -444,25 +444,31 @@ void part2()
 
     for (int i = 1; i < points.size(); i++)
     {
-        while (hull.size() > 2 && orientation(hull[hull.size() - 2], hull[hull.size() - 1], points[i]) != -1)
+        Point p2 = hull.top();
+        hull.pop();
+        while (hull.size() > 2 && orientation(hull.top(), p2, points[i]) != -1)
         {
-            hull.pop_back();
+            p2 = hull.top();
+            hull.pop();
         }
-        hull.push_back(points[i]);
+        hull.push(p2);
+        hull.push(points[i]);
     }
-    for (int i = 0; i < hull.size(); i++)
+    Point firstpoint = hull.top();
+    firstpoint.drawCircle(3.0 / 800.0, 2);
+    while (hull.size() > 1)
     {
-        if (i != 0)
-        {
-            Line(hull[i], hull[i - 1]).drawLine(2);
-        }
-        hull[i].drawCircle(3.0 / 800.0, 2);
+        Point p1 = hull.top();
+        hull.pop();
+        Line(p1, hull.top()).drawLine();
+        p1.drawCircle(3.0 / 800.0, 2);
     }
-    Line(hull[0], hull[hull.size() - 1]).drawLine(2);
-    arrToFile();
+    hull.top().drawCircle(3.0 / 800.0, 2);
+    Line(firstpoint, hull.top()).drawLine();
+    arrToFile("grahamscan.ppm");
 }
 int main()
 {
-    part1();
+    // part1();
     part2();
 }
