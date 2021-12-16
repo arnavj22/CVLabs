@@ -2,7 +2,8 @@
 
 using namespace std;
 
-const int size = 400;
+const int size = 400
+
 int (*result)[size] = new int[size][size];
 int (*ppm)[size] = new int[size * 3][size];
 void set_pixel(int x, int y, int c = 1)
