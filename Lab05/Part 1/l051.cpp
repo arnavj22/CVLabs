@@ -1,4 +1,14 @@
-#include "bits/stdc++.h"
+#include <stdio.h>
+#include <algorithm>
+#include <list>
+#include <iterator>
+#include <chrono>
+#include <climits>
+#include <fstream>
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
 
 using namespace std;
 class Image
