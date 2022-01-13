@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <string>
 //Arnav Jain
 using namespace std;
 class Image
@@ -91,7 +92,7 @@ public:
                 for(int k = -1; k <= 1; k++){
                     for(int l = -1; l <= 1; l++){
                         if(i + k >= 0 && i + k < height && j + l >= 0 && j + l < width){
-                            val += ppm[i + k][j + l] * oper[(k + 1) * 3 + l + 1];
+                            val += ppm[i + k][j + (l * 3)] * oper[(k + 1) * 3 + l + 1];
 
                         }
                     }
@@ -140,17 +141,17 @@ public:
 };
 Image read_image(string file)
 {
+    
     ifstream infile;
     infile.open(file);
     string line;
     getline(infile, line);
-
-    line = line.substr(3);
+    getline(infile, line);
     int width = stoi(line.substr(0, line.find(" ")));
     line = line.substr(line.find(" ") + 1);
-    int height = stoi(line.substr(0, line.find(" ")));
-    line = line.substr(line.find(" ") + 1);
-    int scale = stoi(line.substr(0, line.find(" ")));
+    int height = stoi(line);
+    getline(infile, line);
+    int scale = stoi(line);
     Image img = Image(width, height, scale);
     //cout << img.ppm.size() << " " << img.ppm[0].size() << endl;
     for (int i = 0; i < height; i++)
