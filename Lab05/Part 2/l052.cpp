@@ -255,7 +255,7 @@ void part2(){
     Image im = read_image("image.ppm");
     Image greyscale = im.toGrayScale();
     greyscale.writePPM("imageg.ppm");
-    Image lowerthreshold = greyscale.Gradient(20000);
+    Image lowerthreshold = greyscale.Gradient(40000);
     Image upperthreshold = greyscale.Gradient(60000);
     //cout << "finished thresholding" << "\n";
     Image comb = lowerthreshold.combineImage(upperthreshold);

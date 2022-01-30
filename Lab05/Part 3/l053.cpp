@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <cmath>
 #include <string>
+#include <math.h>
 //Arnav Jain
 using namespace std;
 class Image
@@ -103,25 +104,74 @@ public:
         }
         return sobel;
     }
-    Image Gradient(int threshold){
+    Image Gradient(int threshold){ // true means magnitude, false means direction
         Image gx = SobelOperator(true);
         Image gy = SobelOperator(false);
         Image gradient = Image(width/3, height, 1);
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j+=3)
+        if(threshold != -1){
+            for (int i = 0; i < height; i++)
             {
-                int val = pow(gx.ppm[i][j], 2) + pow(gy.ppm[i][j], 2);
-                if(val > threshold){
-                    gradient.setPixel(i, j, 1, 1, 1);
+                for (int j = 0; j < width; j+=3)
+                {
+                    int val = pow(gx.ppm[i][j], 2) + pow(gy.ppm[i][j], 2);
+                    if(val > threshold){
+                        gradient.setPixel(i, j, 1, 1, 1);
+                    }
+                    else{
+                        gradient.setPixel(i, j, 0, 0, 0);
+                    }
+                    
                 }
-                else{
-                    gradient.setPixel(i, j, 0, 0, 0);
+            }
+        }
+        else{
+            int angles[] = { -180, -135, -90, -45, 0, 45, 90, 135, 180 };
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j += 3)
+                {
+                    double val = atan2(gy.ppm[i][j], gx.ppm[i][j]);
+                    if(val > 1){
+                        val = val - 2 * M_PI;
+                    }
+                    val *= 180 / M_PI;
+                    double mindist = 180;
+                    double index = 0;
+
+                    for(int k = 0; k < 9; k++){
+                        double dist = abs(val - angles[k]);
+                        if(dist < mindist){
+                            mindist = dist;
+                            index = k;
+                        }
+                    }
+                    //cout << index;
+                    gradient.setPixel(i, j, index, index, index);
                 }
-                
             }
         }
         return gradient;
+    }
+    Image minthreshold(Image magnitude){
+        pair<int, int> direction[] = {make_pair(0, 1), make_pair(1, 1), make_pair(1, 0), make_pair(-1, 1), make_pair(-1, 0), make_pair(-1, -1), make_pair(0, -1), make_pair(1, -1), make_pair(0, 1) };
+        Image min = Image(width/3, height, 1);
+        for (int i = 1; i < height - 1; i++)
+        {
+            for (int j = 3; j < width - 3; j+=3)
+            {
+
+                int val = ppm[i][j];
+                int mag = magnitude.ppm[i][j];
+                //cout << i << " " << j << " " << val << endl;
+                if(mag > magnitude.ppm[i + direction[val].first][j + direction[val].second * 3] && mag > magnitude.ppm[i - direction[val].first][j - direction[val].second * 3]){
+                    min.setPixel(i, j, 1, 1, 1);
+                }
+                else{
+                    min.setPixel(i, j, 0, 0, 0);
+                }
+            }
+        }   
+        return min; 
     }
     void writePPM(string filename)
     {
@@ -209,12 +259,12 @@ Image read_image(string file)
     ifstream infile;
     infile.open(file);
     string line;
-    getline(infile, line);
-    getline(infile, line);
-    int width = stoi(line.substr(0, line.find(" ")));
-    line = line.substr(line.find(" ") + 1);
+    infile >> line;
+    infile >> line;
+    int width = stoi(line);
+    infile >> line;
     int height = stoi(line);
-    getline(infile, line);
+    infile >> line;
     int scale = stoi(line);
     Image img = Image(width, height, scale);
     //cout << img.ppm.size() << " " << img.ppm[0].size() << endl;
@@ -223,19 +273,12 @@ Image read_image(string file)
         
         for (int j = 0; j < width * 3; j+= 3)
         {
-            getline(infile, line, ' ');
+            infile >> line;
             int r = stoi(line);
 
-            getline(infile, line, ' ');
+            infile >> line;
             int g = stoi(line);
-            if(j == (width * 3) - 1)
-            {
-                getline(infile, line);
-            }
-            else
-            {
-                getline(infile, line, ' ');
-            }
+            infile >> line;
             int b = stoi(line);
             img.setPixel(i, j, r, g, b);
         }
@@ -251,12 +294,15 @@ void part1()
     greyscale.Gradient(20000).writePPM("imagem.ppm");
 
 }
-void part2(){
+void part2(char *argv[]){
+    int lower, upper;
+    lower = 150;
+    upper = 220;
     Image im = read_image("image.ppm");
     Image greyscale = im.toGrayScale();
     greyscale.writePPM("imageg.ppm");
-    Image lowerthreshold = greyscale.Gradient(20000);
-    Image upperthreshold = greyscale.Gradient(60000);
+    Image lowerthreshold = greyscale.Gradient(lower * lower);
+    Image upperthreshold = greyscale.Gradient(upper * upper);
     //cout << "finished thresholding" << "\n";
     Image comb = lowerthreshold.combineImage(upperthreshold);
     //cout << "finished combining" << "\n";
@@ -264,14 +310,21 @@ void part2(){
     comb.floodfill();
     comb.writePPM("image1.ppm");
 }
-void part3(){
+void part3(char *argv[])
+{
+    part2(argv);
     Image im = read_image("image.ppm");
     Image greyscale = im.toGrayScale();
-    greyscale.writePPM("imageg.ppm");
+    Image comb = read_image("image1.ppm");
+    Image theta = greyscale.Gradient(-1);
+    //theta.writePPM("imagetheta.ppm");
+    Image mint = theta.minthreshold(greyscale);
+    mint.writePPM("image2.ppm");
+    comb.combineImage(mint).writePPM("image3.ppm");
 }
-int main()
+int main(int argc, char *argv[])
 {
     //part1();
-    part2();
-    part3();
+    //part2(argv);
+    part3(argv);
 }
