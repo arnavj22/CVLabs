@@ -84,9 +84,9 @@ public:
             oper.push_back(1);
                     
         }
-        for (int i = 0; i < height; i++)
+        for (int i = 1; i < height - 1; i++)
         {
-            for (int j = 0; j < width; j+=3)
+            for (int j = 3; j < width - 3; j+=3)
             {
                 int val = 0;
 
@@ -94,7 +94,6 @@ public:
                     for(int l = -1; l <= 1; l++){
                         if(i + k >= 0 && i + k < height && j + l >= 0 && j + l < width){
                             val += ppm[i + k][j + (l * 3)] * oper[(k + 1) * 3 + l + 1];
-
                         }
                     }
                 }
@@ -103,6 +102,20 @@ public:
             }
         }
         return sobel;
+    }
+    Image magnitude(){
+        Image gx = SobelOperator(true);
+        Image gy = SobelOperator(false);
+        Image gradient = Image(width / 3, height, 1);
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j += 3)
+                {
+                    int val = pow(gx.ppm[i][j], 2) + pow(gy.ppm[i][j], 2);
+                    gradient.setPixel(i, j, val, val, val);
+                }
+            }
+        return gradient;
     }
     Image Gradient(int threshold){ // true means magnitude, false means direction
         Image gx = SobelOperator(true);
@@ -131,10 +144,6 @@ public:
                 for (int j = 0; j < width; j += 3)
                 {
                     double val = atan2(gy.ppm[i][j], gx.ppm[i][j]);
-                    if(val > 1){
-                        val = val - 2 * M_PI;
-                    }
-                    val *= 180 / M_PI;
                     double mindist = 180;
                     double index = 0;
 
@@ -252,6 +261,20 @@ public:
         floodFillRecur(x - 1, y + 3, prevC, newC, t+1);
         floodFillRecur(x + 1, y - 3, prevC, newC, t+1);
     }
+    Image andfunction(Image im){
+        Image newIm = Image(width/3, height, 1);
+        for(int i = 0; i < height; i++){
+            for(int j = 0; j < width; j++){
+                if(ppm[i][j] ==  0 || im.ppm[i][j] == 0){
+                    newIm.setPixel(i, j, 0, 0, 0);
+                }
+                else{
+                    newIm.setPixel(i, j, 1, 1, 1);
+                }
+            }
+        }
+        return newIm;
+    }
 };
 Image read_image(string file)
 {
@@ -294,10 +317,17 @@ void part1()
     greyscale.Gradient(20000).writePPM("imagem.ppm");
 
 }
-void part2(char *argv[]){
-    int lower, upper;
-    lower = 150;
-    upper = 220;
+void part2(int argc, char** argv){
+    int lower = 150, upper = 220;
+    for(int i = 0; i < argc; i++){
+        string a = argv[i];
+        if(a == ("-L")){
+            lower = stoi(argv[i+1]);
+        }
+        if(a == ("-H")){
+            upper = stoi(argv[i+1]);
+        }
+    }
     Image im = read_image("image.ppm");
     Image greyscale = im.toGrayScale();
     greyscale.writePPM("imageg.ppm");
@@ -310,21 +340,30 @@ void part2(char *argv[]){
     comb.floodfill();
     comb.writePPM("image1.ppm");
 }
-void part3(char *argv[])
+void part3(int argc, char** argv)
 {
-    part2(argv);
+    part2(argc, argv);
+    string outputfile = "imagef.ppm";
+    for (int i = 0; i < argc; i++)
+    {
+        string a = argv[i];
+        if (a == ("-F"))
+        {
+            outputfile = argv[i + 1];
+        }
+    }
     Image im = read_image("image.ppm");
     Image greyscale = im.toGrayScale();
     Image comb = read_image("image1.ppm");
     Image theta = greyscale.Gradient(-1);
     //theta.writePPM("imagetheta.ppm");
-    Image mint = theta.minthreshold(greyscale);
+    Image mint = theta.minthreshold(greyscale.magnitude());
     mint.writePPM("image2.ppm");
-    comb.combineImage(mint).writePPM("image3.ppm");
+    comb.andfunction(mint).writePPM(outputfile);
 }
-int main(int argc, char *argv[])
+int main(int argc, char** argv)
 {
     //part1();
-    //part2(argv);
-    part3(argv);
+    //part2(argc, argv);
+    part3(argc, argv);
 }
