@@ -93,7 +93,6 @@ public:
                     for(int l = -1; l <= 1; l++){
                         if(i + k >= 0 && i + k < height && j + l >= 0 && j + l < width){
                             val += ppm[i + k][j + (l * 3)] * oper[(k + 1) * 3 + l + 1];
-
                         }
                     }
                 }
@@ -118,7 +117,6 @@ public:
                 else{
                     gradient.setPixel(i, j, 0, 0, 0);
                 }
-                
             }
         }
         return gradient;

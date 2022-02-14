@@ -35,6 +35,43 @@ public:
             ppm.push_back(temp);
         }
     }
+    vector<int> points(int x, int y, double slope){
+        vector<int> temp;
+        //cout << x << " " << y << " " << slope << endl;
+        double intercept = y - slope * x;
+        int x1 = 0;
+        int y1 = x1 * slope + intercept;
+        //cout << x1 << " " << y1 << endl;
+        if(y1 >= 0 && y1 < height){
+            temp.push_back(x1);
+            temp.push_back(y1);
+        }
+        x1 = (width / 3) - 1;
+        y1 = x1 * slope + intercept;
+        //cout << x1 << " " << y1 << endl;
+        if (y1 >= 0 && y1 < height)
+        {
+            temp.push_back(x1);
+            temp.push_back(y1);
+        }
+        y1 = 0;
+        x1 = (y1 - intercept) / slope;
+        //cout << x1 << " " << y1 << endl;
+        if (x1 >= 0 && x1 < width / 3)
+        {
+            temp.push_back(x1);
+            temp.push_back(y1);
+        }
+        y1 = height - 1;
+        x1 = (y1 - intercept) / slope;
+        //cout << x1 << " " << y1 << endl;
+        if (x1 >= 0 && x1 < width / 3)
+        {
+            temp.push_back(x1);
+            temp.push_back(y1);
+        }
+        return temp;
+    }
     void setPixel(int x, int y, double r, double g, double b)
     {
         if(x < height && x >= 0 && y + 2 < width && y >= 0){
@@ -128,19 +165,22 @@ public:
             }
         }
     }
-    void drawLineAdditive(int x, int y, double angle)
+    void drawLineAdditive(int y, int x, double angle, int increment)
     {
         double slope = tan(angle);
-        cout << slope << "\n";
-        double intercept = y - slope * x;
-        double x1 = 0;
-        double x2 = height - 1;
-        double y1 = slope * x1 + intercept;
-        double y2 = slope * x2 + intercept;
+        vector<int> p1 = points(x, y, slope);
+        //cout << p1.size() << endl;
+        int x1 = p1[0];
+        int y1 = p1[1];
+        int x2 = p1[2];
+        int y2 = p1[3];
+
+        
+        //cout << x1 << ", " << y1 << " : " << x2 << ", " << y2 << "\n";
         double dx = x2 - x1;
         double dy = y2 - y1;
 
-        if ((dx <= 0 and dy <= 0) or (dx <= 0 and dy > 0))
+        if ((dx <= 0 and dy <= 0) or (dx <= 0 and dy > 0)) // flip point 1 and point 2
         {
             dx = -1 * (dx); // 150
             dy = -1 * (dy); // -300
@@ -159,12 +199,8 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    if (i * 3 >= width)
-                    {
-                        continue;
-                    }
-                    int v = ppm[i][j*3] + 1;
-                    setPixel(i, j*3, v, v, v);
+                    int v = ppm[j][i*3] + increment;
+                    setPixel(j, i*3, v, v, v);
                     if (c > 0)
                     {
                         j -= 1;
@@ -177,12 +213,8 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    if (j * 3 >= width)
-                    {
-                        continue;
-                    }
-                    int v = ppm[i][j*3] + 1;
-                    setPixel(i, j*3, v, v, v);
+                    int v = ppm[j][i*3] + increment;
+                    setPixel(j, i*3, v, v, v);
                     if (c > 0)
                     {
                         j += 1;
@@ -192,37 +224,30 @@ public:
                 }
             }
         }
-        else
+        else // change in y > change in x aka slope > 1
         {
             j = x1;
             int c = dx - dy;
-            if (dy < 0)
+            if (dx < 0) // downwards
             {
                 for (int i = y1; i > y2; i--)
                 {
-                    if (i * 3 >= width)
-                    {
-                        continue;
-                    }
-                    int v = ppm[j][i * 3] + 1;
-                    setPixel(j, i * 3, v, v, v);
+                    int v = ppm[i][j * 3] + increment;
+                    setPixel(i, j * 3, v, v, v);
                     if (c > 0)
                     {
-                        j += 1;
-                        c += dy;
+                        j -= 1;
+                        c -= dy;
                     }
-                    c += dx;
+                    c -= dx;
                 }
             }
-            else
+            else // upwards
             {
                 for (int i = y1; i < y2; i++)
                 {
-                    if(i * 3 >= width){
-                        continue;
-                    }
-                    int v = ppm[j][i*3] + 1;
-                    setPixel(j, i * 3, v, v, v);
+                    int v = ppm[i][j*3] + increment;
+                    setPixel(i, j * 3, v, v, v);
                     if (c > 0)
                     {
                         j += 1;
@@ -231,6 +256,35 @@ public:
                     c += dx;
                 }
             }
+        }
+    }
+    void drawCircle(int x, int y, double radius1)
+    {
+        int a = x;
+        int b = y;
+        int radius = 2;
+        int xmax = (int)(radius * 0.70710678);
+        y = radius;
+        int y2 = y * y;
+        int ty = (2 * y) - 1;
+        int y2_new = y2;
+        for (int x = 0; x <= xmax + 1; x++)
+        {
+            if ((y2 - y2_new) >= ty)
+            {
+                y2 -= ty;
+                y -= 1;
+                ty -= 2;
+            }
+            setPixel(x + a, (-y + b) * 3, 1, 1, 1);
+            setPixel(-x + a, (y + b) * 3, 1, 1, 1);
+            setPixel(x + a, (y + b) * 3, 1, 1, 1);
+            setPixel(-x + a, (-y + b) * 3, 1, 1, 1);
+            setPixel(y + a, (x + b) * 3, 1, 1,  1);
+            setPixel(y + a, (-x + b) * 3, 1, 1, 1);
+            setPixel(-y + a, (x + b) * 3, 1, 1, 1);
+            setPixel(-y + a, (-x + b) * 3, 1, 1, 1);
+            y2_new -= (2 * x) - 3;
         }
     }
     Image toGrayScale()
@@ -291,7 +345,6 @@ public:
                         }
                     }
                 }
-                val = abs(val);
                 sobel.setPixel(i, j, val, val, val);
             }
         }
@@ -321,7 +374,6 @@ public:
             for (int j = 0; j < width; j += 3)
             {
                 double val = atan2(gy.ppm[i][j], gx.ppm[i][j]);
-                cout << val << "\n";
                 gradient.setPixel(i, j, val, val, val);
             }
         }
@@ -509,11 +561,48 @@ public:
         for(int i = 0; i < height; i++){
             for(int j = 0; j < width ; j+= 3){
                 if(ppm[i][j] == 1){
-                    o.drawLineAdditive(i, j, t.ppm[i][j]);
+                    o.drawLineAdditive(i + 1, j / 3, t.ppm[i][j], 1);
+                    o.drawLineAdditive(i, j/3, t.ppm[i][j], 2);
+                    o.drawLineAdditive(i - 1, j / 3, t.ppm[i][j], 1);
+                }
+            }
+        }
+        int max = 0;
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j += 3)
+            {
+                if (o.ppm[i][j] > max)
+                {
+                    max = o.ppm[i][j];
+                }
+            }
+        }
+        o.scale = max;
+        return o;
+    }
+    Image threshold(int t){
+        Image o = Image(width / 3, height, 1);
+        for(int i = 0; i < height; i++){
+            for(int j = 0; j < width ; j+= 3){
+                if(ppm[i][j] > t){
+                    o.drawCircle(i, j/3, 1);
+                    o.drawCircle(i, j / 3, 2);
+                    o.drawCircle(i, j / 3, 3);
+                    o.drawCircle(i, j / 3, 4);
                 }
             }
         }
         return o;
+    }
+    void overlayMask(Image im){
+        for(int i = 0; i < height; i++){
+            for(int j = 0; j < width; j+= 3){
+                if(im.ppm[i][j] == 1){
+                    setPixel(i, j, 255, 0, 0);
+                }
+            }
+        }
     }
 };
 Image read_image(string file)
@@ -547,7 +636,8 @@ Image read_image(string file)
 }
 void part1(int argc, char **argv)
 {
-    int lower = 150, upper = 220;
+    int lower = 100, upper = 200, thresh = 130;
+    string outputfile = "imagef.ppm";
     for (int i = 1; i < argc; i++)
     {
         string a = argv[i];
@@ -559,11 +649,10 @@ void part1(int argc, char **argv)
         {
             upper = stoi(argv[i + 1]);
         }
-    }
-    string outputfile = "imagef.ppm";
-    for (int i = 1; i < argc; i++)
-    {
-        string a = argv[i];
+        if (a == ("-TC"))
+        {
+            thresh = stoi(argv[i + 1]);
+        }
         if (a == ("-F"))
         {
             outputfile = argv[i + 1];
@@ -583,9 +672,13 @@ void part1(int argc, char **argv)
     Image canny = comb.andfunction(mint);
     canny.writePPM(outputfile);
     Image th = greyscale.theta();
-    th.writePPM("theta.ppm");
+    //th.writePPM("theta.ppm");
     Image lines = canny.generateIntermediaryLines(th);
-    lines.writePPM("lines.ppm");
+    lines.writePPM("imagey.ppm");
+    Image possibleCenters = lines.threshold(thresh);
+    //possibleCenters.writePPM("possibleCenters.ppm");
+    im.overlayMask(possibleCenters);
+    im.writePPM("imageCC.ppm");
 }
 int main(int argc, char **argv)
 {
