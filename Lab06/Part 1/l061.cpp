@@ -636,7 +636,7 @@ Image read_image(string file)
 }
 void part1(int argc, char **argv)
 {
-    int lower = 100, upper = 200, thresh = 130;
+    int lower = 100, upper = 200, thresh = 100;
     string outputfile = "imagef.ppm";
     for (int i = 1; i < argc; i++)
     {
@@ -674,7 +674,7 @@ void part1(int argc, char **argv)
     Image th = greyscale.theta();
     //th.writePPM("theta.ppm");
     Image lines = canny.generateIntermediaryLines(th);
-    lines.writePPM("imagey.ppm");
+    lines.writePPM("imagev.ppm");
     Image possibleCenters = lines.threshold(thresh);
     //possibleCenters.writePPM("possibleCenters.ppm");
     im.overlayMask(possibleCenters);

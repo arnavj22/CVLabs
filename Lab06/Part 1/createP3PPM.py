@@ -31,5 +31,5 @@ def writePPM(image, filename):
     
 
 if __name__ == "__main__":
-    image = readImage("coinsEasy.jpg")
+    image = readImage("blurredimage.jpg")
     writePPM(image, "image.ppm")
