@@ -1,13 +1,12 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
-// using namespaces to nullify use of cv::function(); syntax and std::function();
 using namespace std;
 using namespace cv;
 
 int main()
 {
     // Reading image
-    Mat img = imread("test.jpg");
+    Mat img = imread("coinsHarder.jpg");
     // Display original image
     imshow("original Image", img);
     waitKey(0);
