@@ -33,7 +33,7 @@ public:
         yc = y;
         percentage = perc;
         color = col;
-        if (rad < 50)
+        if (rad < 93)
         {
             if(col > 1.1){
                 type = "p";
@@ -41,16 +41,17 @@ public:
             }
             else{
                 b = 255;
+                type = "d"; // penny or dime
             }
-            type = "d"; // penny or dime
+
         }
-        else if (rad < 80)
+        else if (rad < 108)
         {
             r = 255;
             b = 255;
             type = "n"; // nickel
         }
-        else if (rad < 100)
+        else if (rad < 140)
         {
             g = 255;
             type = "q"; // quarter
@@ -58,7 +59,7 @@ public:
         else
         {
             r = 255;
-            b = 255;
+            g = 255;
             type = "h"; // half dollar
         }
     }
@@ -90,39 +91,46 @@ public:
     }
     vector<int> points(int x, int y, double slope){
         vector<int> temp;
-        //cout << x << " " << y << " " << slope << endl;
-        double intercept = y - slope * x;
-        int x1 = 0;
-        int y1 = x1 * slope + intercept;
-        //cout << x1 << " " << y1 << endl;
-        if(y1 >= 0 && y1 < height){
-            temp.push_back(x1);
-            temp.push_back(y1);
-        }
-        x1 = (width / 3) - 1;
-        y1 = x1 * slope + intercept;
-        //cout << x1 << " " << y1 << endl;
-        if (y1 >= 0 && y1 < height)
-        {
-            temp.push_back(x1);
-            temp.push_back(y1);
-        }
-        y1 = 0;
-        x1 = (y1 - intercept) / slope;
-        //cout << x1 << " " << y1 << endl;
-        if (x1 >= 0 && x1 < width / 3)
-        {
-            temp.push_back(x1);
-            temp.push_back(y1);
-        }
-        y1 = height - 1;
-        x1 = (y1 - intercept) / slope;
-        //cout << x1 << " " << y1 << endl;
-        if (x1 >= 0 && x1 < width / 3)
-        {
-            temp.push_back(x1);
-            temp.push_back(y1);
-        }
+        double m = pow((1 + slope * slope), 0.5);
+        double dx = 1 / m;
+        double dy = slope / m;
+        temp.push_back(x + dx * 200);
+        temp.push_back(y + dy * 200);
+        temp.push_back(x - dx * 200);
+        temp.push_back(y - dy * 200);
+        // // cout << x << " " << y << " " << slope << endl;
+        // double intercept = y - slope * x;
+        // int x1 = 0;
+        // int y1 = x1 * slope + intercept;
+        // //cout << x1 << " " << y1 << endl;
+        // if(y1 >= 0 && y1 < height){
+        //     temp.push_back(x1);
+        //     temp.push_back(y1);
+        // }
+        // x1 = (width / 3) - 1;
+        // y1 = x1 * slope + intercept;
+        // //cout << x1 << " " << y1 << endl;
+        // if (y1 >= 0 && y1 < height)
+        // {
+        //     temp.push_back(x1);
+        //     temp.push_back(y1);
+        // }
+        // y1 = 0;
+        // x1 = (y1 - intercept) / slope;
+        // //cout << x1 << " " << y1 << endl;
+        // if (x1 >= 0 && x1 < width / 3)
+        // {
+        //     temp.push_back(x1);
+        //     temp.push_back(y1);
+        // }
+        // y1 = height - 1;
+        // x1 = (y1 - intercept) / slope;
+        // //cout << x1 << " " << y1 << endl;
+        // if (x1 >= 0 && x1 < width / 3)
+        // {
+        //     temp.push_back(x1);
+        //     temp.push_back(y1);
+        // }
         return temp;
     }
     void setPixel(int x, int y, double r, double g, double b)
@@ -252,8 +260,12 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    int v = ppm[j][i*3] + increment;
-                    setPixel(j, i*3, v, v, v);
+                    if (j < height && j  >= 0 && i * 3 < width && i * 3 >= 0)
+                    {
+                        int v = ppm[j][i * 3] + increment;
+                        setPixel(j, i * 3, v, v, v);
+                    }
+                    
                     if (c > 0)
                     {
                         j -= 1;
@@ -266,8 +278,11 @@ public:
             {
                 for (int i = x1; i < x2; i++)
                 {
-                    int v = ppm[j][i*3] + increment;
-                    setPixel(j, i*3, v, v, v);
+                    if (j < height && j  >= 0 && i * 3 < width && i * 3 >= 0)
+                    {
+                        int v = ppm[j][i * 3] + increment;
+                        setPixel(j, i * 3, v, v, v);
+                    }
                     if (c > 0)
                     {
                         j += 1;
@@ -285,8 +300,11 @@ public:
             {
                 for (int i = y1; i > y2; i--)
                 {
-                    int v = ppm[i][j * 3] + increment;
-                    setPixel(i, j * 3, v, v, v);
+                    if (i < height && i  >= 0 && j * 3 < width && j * 3 >= 0)
+                    {
+                        int v = ppm[i][j * 3] + increment;
+                        setPixel(i, j * 3, v, v, v);
+                    }
                     if (c > 0)
                     {
                         j -= 1;
@@ -299,8 +317,11 @@ public:
             {
                 for (int i = y1; i < y2; i++)
                 {
-                    int v = ppm[i][j*3] + increment;
-                    setPixel(i, j * 3, v, v, v);
+                    if (i < height && i >= 0 && j * 3 < width && j * 3 >= 0)
+                    {
+                        int v = ppm[i][j * 3] + increment;
+                        setPixel(i, j * 3, v, v, v);
+                    }
                     if (c > 0)
                     {
                         j += 1;
@@ -456,7 +477,7 @@ public:
         {
             for (int j = 0; j < width; j += 3)
             {
-                double val = atan2(gy.ppm[i][j], gx.ppm[i][j]);
+                double val = 1/atan2(gy.ppm[i][j], gx.ppm[i][j]);
                 gradient.setPixel(i, j, val, val, val);
             }
         }
@@ -511,7 +532,7 @@ public:
         }
         return gradient;
     }
-    Image minthreshold(Image magnitude)
+    Image minthreshold(Image &magnitude)
     {
         pair<int, int> direction[] = {make_pair(0, 1), make_pair(1, 1), make_pair(1, 0), make_pair(-1, 1), make_pair(-1, 0), make_pair(-1, -1), make_pair(0, -1), make_pair(1, -1), make_pair(0, 1)};
         Image min = Image(width / 3, height, 1);
@@ -523,7 +544,7 @@ public:
                 int val = ppm[i][j];
                 int mag = magnitude.ppm[i][j];
                 // cout << i << " " << j << " " << val << endl;
-                if (mag > magnitude.ppm[i + direction[val].first][j + direction[val].second * 3] && mag > magnitude.ppm[i - direction[val].first][j - direction[val].second * 3])
+                if (mag >= magnitude.ppm[i + direction[val].first][j + direction[val].second * 3] && mag >= magnitude.ppm[i - direction[val].first][j - direction[val].second * 3])
                 {
                     min.setPixel(i, j, 1, 1, 1);
                 }
@@ -550,7 +571,7 @@ public:
         }
         outfile.close();
     }
-    Image combineImage(Image image)
+    Image combineImage(Image &image)
     {
         Image newIm = Image(width / 3, height, scale + image.scale);
         for (int i = 0; i < height; i++)
@@ -620,7 +641,7 @@ public:
         floodFillRecur(x - 1, y + 3, prevC, newC, t + 1);
         floodFillRecur(x + 1, y - 3, prevC, newC, t + 1);
     }
-    Image andfunction(Image im)
+    Image andfunction(Image &im)
     {
         Image newIm = Image(width / 3, height, 1);
         for (int i = 0; i < height; i++)
@@ -639,7 +660,7 @@ public:
         }
         return newIm;
     }
-    Image generateIntermediaryLines(Image t){
+    Image generateIntermediaryLines(Image &t){
         Image o = Image(width / 3, height, 10);
         for(int i = 0; i < height; i++){
             for(int j = 0; j < width ; j+= 3){
@@ -693,7 +714,70 @@ public:
         }
         return centers;
     }
-    void overlayMask(Image im){
+    vector<pair<int, int> > centerPointsSquare(int t) //splits the image into 10x10 regions, computes the average value of each region
+    {
+        vector<pair<int, int> > centers;
+        int xsec = height / 20;
+        int ysec = width / 60;
+        for (int i = 0; i < height - xsec + 1; i += xsec)
+        {
+            for (int j = 0; j < width - ysec + 1; j += ysec)
+            {
+                int sum = 0;
+                for (int k = 0; k < xsec; k++)
+                {
+                    for (int l = 0; l < ysec; l+= 3)
+                    {
+                        sum += ppm[i + k][j + l];
+                    }
+                }
+                int average = sum / (xsec * ysec / 3);
+                for (int k = 0; k < xsec; k++)
+                {
+                    for (int l = 0; l < ysec; l+= 3)
+                    {
+                        if(ppm[i + k][j + l] > 1.3 * average + 20 || ppm[i + k][j + l] > t){
+                            centers.push_back(make_pair(i + k, (j + l)/3));
+                        }
+                    }
+                }
+            }
+        }
+        return centers;
+
+    }
+    Image thresholdSquare(int t)
+    {
+        Image o = Image(width / 3, height, 1);
+        for (int i = 0; i < height; i += 20)
+        {
+            for (int j = 0; j < width; j += 60)
+            {
+                int min = -1, x1 = -1, y1 = -1;
+                for (int k = 0; k < 20; k++)
+                {
+                    for (int l = 0; l < 60; l += 3)
+                    {
+                        if (ppm[i + k][j + l] > min)
+                        {
+                            min = ppm[i + k][j + l];
+                            x1 = i + k;
+                            y1 = j + l;
+                        }
+                    }
+                }
+                if (min > t)
+                {
+                    o.drawCircle(i, j / 3, 1);
+                    o.drawCircle(i, j / 3, 2);
+                    o.drawCircle(i, j / 3, 3);
+                    o.drawCircle(i, j / 3, 4);
+                }
+            }
+        }
+        return o;
+    }
+    void overlayMask(Image &im){
         for(int i = 0; i < height; i++){
             for(int j = 0; j < width; j+= 3){
                 if(im.ppm[i][j] == 1){
@@ -762,7 +846,7 @@ public:
         }
         return false;
     }
-    vector<Coin> coinDetection(vector<pair<int, int> > centers, Image mask, double threshold = 0.2)
+    vector<Coin> coinDetection(vector<pair<int, int> > &centers, Image &mask, double threshold = 0.2)
     {
         vector<Coin> coins;
         for(int i = 0; i < centers.size(); i++){
@@ -770,7 +854,7 @@ public:
             int maxrad = -1;
             int x = centers[i].first;
             int y = centers[i].second;
-            for(int j = 50; j < 160; j++){
+            for(int j = 80; j < 180; j++){
                 double percentage = mask.circlePercentage(x, y, j);
                 //cout << percentage << endl;
                 if(maxval < percentage && percentage > threshold){
@@ -778,15 +862,26 @@ public:
                     maxrad = j;
                 }
             }
-            if(maxrad != -1){
+            if(maxrad != -1 && maxval > threshold / 2){
                 Coin c = Coin(x, y, maxrad, maxval, (ppm[x][y * 3] / (double)ppm[x][y * 3 + 1]));
                 coins.push_back(c);
                 drawCirclergb(x, y, maxrad, c.r, c.g, c.b);
             }
         }
         return coins;
+    } 
+    Image drawCenters(vector<pair<int, int> > &centers, Image &im)
+    {
+        Image o = im;
+        for(int i = 0; i < centers.size(); i++){
+            o.drawCirclergb(centers[i].first, centers[i].second, 1, 255, 0, 0);
+            o.drawCirclergb(centers[i].first, centers[i].second, 2, 255, 0, 0);
+            o.drawCirclergb(centers[i].first, centers[i].second, 3, 255, 0, 0);
+            o.drawCirclergb(centers[i].first, centers[i].second, 4, 255, 0, 0);
+        }
+        return o;
     }
-    void drawCoins(vector<Coin> coins){
+    void drawCoins(vector<Coin> &coins){
         for(int i = 0; i < coins.size(); i++){
             Coin c = coins[i];
             drawCirclergb(c.xc, c.yc, c.radius, c.r, c.g, c.b);
@@ -856,7 +951,8 @@ void part1(int argc, char **argv)
     comb.floodfill();
     comb.writePPM("image1.ppm");
     Image t = greyscale.Gradient(-1);
-    Image mint = t.minthreshold(greyscale.magnitude());
+    Image mag = greyscale.magnitude();
+    Image mint = t.minthreshold(mag);
     mint.writePPM("image2.ppm");
     Image canny = comb.andfunction(mint);
     canny.writePPM(outputfile);
@@ -871,8 +967,9 @@ void part1(int argc, char **argv)
 }
 void part2(int argc, char **argv)
 {
-    int lower = 60, upper = 120, thresh = 200;
-    string outputfile = "imagef.ppm";
+    int lower = 70, upper = 140, thresh = 170;
+    double circleThresh = 0.18;
+    string inputfile = "image.ppm";
     for (int i = 1; i < argc; i++)
     {
         string a = argv[i];
@@ -890,13 +987,16 @@ void part2(int argc, char **argv)
         }
         if (a == ("-F"))
         {
-            outputfile = argv[i + 1];
+            inputfile = argv[i + 1];
+        }
+        if(a == ("-TCircle")){
+            circleThresh = stod(argv[i + 1]);
         }
     }
-    Image im = read_image("image.ppm");
-    cout << "image is read" << endl;
+    Image im = read_image(inputfile);
+    //cout << "image is read" << endl;
     Image greyscale = im.toGrayScale();
-    cout << "image is greyscaled" << endl;
+    //cout << "image is greyscaled" << endl;
     greyscale.writePPM("imageg.ppm");
     Image lowerthreshold = greyscale.Gradient(lower * lower);
     Image upperthreshold = greyscale.Gradient(upper * upper);
@@ -904,40 +1004,81 @@ void part2(int argc, char **argv)
     comb.floodfill();
     //comb.writePPM("image1.ppm");
     Image t = greyscale.Gradient(-1);
-    Image mint = t.minthreshold(greyscale.magnitude());
+    Image mag = greyscale.magnitude();
+    Image mint = t.minthreshold(mag);
     //mint.writePPM("image2.ppm");
     Image canny = comb.andfunction(mint);
-    cout << "image is cannied" << endl;
-    canny.writePPM(outputfile);
+   // cout << "image is cannied" << endl;
+    canny.writePPM("imagef.ppm");
     Image th = greyscale.theta();
     Image lines = canny.generateIntermediaryLines(th);
     lines.writePPM("imagev.ppm");
-    Image possibleCenters = lines.threshold(thresh);
-    im.overlayMask(possibleCenters);
-    cout << "centers are generated" << endl;
-    im.writePPM("imageCC.ppm");
-    vector<pair<int, int> > centerPoints = lines.centerPoints(thresh);
-    im = read_image("image.ppm");
-    vector<Coin> coins = im.coinDetection(centerPoints, canny, .19);
+    // Image possibleCenters = lines.threshold(thresh);
+    // im.overlayMask(possibleCenters);
+    vector<pair<int, int> > centerPoints = lines.centerPointsSquare(thresh);
+    Image cc = im.drawCenters(centerPoints, im);
+    //cout << "centers are generated" << endl;
+    cc.writePPM("imageCC.ppm");;
+    //cout << centerPoints.size() << endl;
+    vector<Coin> coins = im.coinDetection(centerPoints, canny, circleThresh);
+
     im.writePPM("imageCD.ppm");
+    vector<Coin> goodCoins;
     for(int i = 0; i < coins.size(); i++){
-        for(int j = i + 1; j < coins.size(); j++){
-            if(coins[i].distance(coins[j]) < 400){
-                if(coins[i].percentage > coins[j].percentage){
-                    coins.erase(coins.begin() + j);
-                    j--;
-                }
-                else{
-                    coins.erase(coins.begin() + i);
-                    j--;
-                }
-                //cout << i << " " << j << " " << coins.size() << endl;
+        Coin coin1 = coins[i];
+        bool added = false;
+        for(int j = 0; j < goodCoins.size(); j++){
+            Coin coin2 = goodCoins[j];
+            if (coin1.distance(coin2) < max(coin1.radius, coin2.radius) * max(coin1.radius, coin2.radius))
+            {
+                added = true;
+                if (coin2.percentage > coin1.percentage)
+                {
+                    goodCoins[j] = coin1;
+                }   // cout << i << " " << j << " " << coins.size() << endl;
             }
         }
+        if(!added){
+            goodCoins.push_back(coin1);
+        }
     }
-    im = read_image("image.ppm");
+    coins = goodCoins;
+    int p = 0, n = 0, d = 0, q = 0, h = 0;
+    double money = 0;
+    for(int i = 0; i < coins.size(); i++){
+        Coin coin = coins[i];
+        if(coin.type == "p"){
+            p++;
+            money += .01;
+        }
+        else if(coin.type == "n"){
+            n++;
+            money += .05;
+        }
+        else if(coin.type == "d"){
+            d++;
+            money += .1;
+        }
+        else if(coin.type == "q"){
+            q++;
+            money += .25;
+        }
+        else if(coin.type == "h"){
+            h++;
+            money += 1;
+        }
+
+    }
+    ofstream outfile;
+    outfile.open("results.txt");
+    outfile << "Pennies: " << p << "\nNickels: " << n << "\nDimes: " << d << "\nQuarters: " << q << "\nHalf Dollars: " << h << endl;
+    outfile << "Total Money: $" << setprecision(2) << fixed <<  money << endl;
+    outfile.close();
+    cout << "Pennies: " << p << "\nNickels: " << n << "\nDimes: " << d << "\nQuarters: " << q << "\nHalf Dollars: " << h << endl;
+    cout << "Total Money: $" << setprecision(2) << fixed << money << endl;
+    Image im = read_image(inputfile);
     im.drawCoins(coins);
-    im.writePPM("output.ppm");
+    im.writePPM("coins.ppm");
 
 
 }
@@ -945,9 +1086,4 @@ int main(int argc, char **argv)
 {
     //part1(argc, argv);
     part2(argc, argv);
-    // Image testimage = Image(300, 300, 1);
-    // testimage.drawCircle(150, 150, 100);
-    // double d = testimage.circlePercentage(150, 150, 100);
-    // cout << d << "\n";
-    // testimage.writePPM("test.ppm");
 }

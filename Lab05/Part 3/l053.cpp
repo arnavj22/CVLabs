@@ -143,7 +143,7 @@ public:
             {
                 for (int j = 0; j < width; j += 3)
                 {
-                    double val = atan2(gy.ppm[i][j], gx.ppm[i][j]);
+                    double val = 1/atan2(gy.ppm[i][j], gx.ppm[i][j]);
                     double mindist = 180;
                     double index = 0;
 
@@ -172,7 +172,7 @@ public:
                 int val = ppm[i][j];
                 int mag = magnitude.ppm[i][j];
                 //cout << i << " " << j << " " << val << endl;
-                if(mag > magnitude.ppm[i + direction[val].first][j + direction[val].second * 3] && mag > magnitude.ppm[i - direction[val].first][j - direction[val].second * 3]){
+                if(mag >= magnitude.ppm[i + direction[val].first][j + direction[val].second * 3] && mag >= magnitude.ppm[i - direction[val].first][j - direction[val].second * 3]){
                     min.setPixel(i, j, 1, 1, 1);
                 }
                 else{
@@ -318,7 +318,7 @@ void part1()
 
 }
 void part2(int argc, char** argv){
-    int lower = 150, upper = 220;
+    int lower = 410, upper = 600;
     for(int i = 0; i < argc; i++){
         string a = argv[i];
         if(a == ("-L")){
