@@ -1,0 +1,6 @@
+Pennies: 69
+Nickels: 10
+Dimes: 3
+Quarters: 33
+Half Dollars: 0
+Total Money: $9.74
