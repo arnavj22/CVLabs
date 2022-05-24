@@ -75,7 +75,7 @@ Mat perspective_projection_tetra(vector<Mat> a)
     Mat image(600, 800, CV_8UC3, Scalar(255, 255, 255));
 
    // Mat transformtocenter = (Mat_<double>(4, 4) << 1, 0, 0, 400, 0, 1, 0, 300, 0, 0, 1, 0, 0, 0, 0, 1);
-    vector<Point> points;
+    vector<Point> points;       
     for (int i = 0; i < a.size(); i++)
     {
         Mat temp = a[i];
@@ -178,7 +178,7 @@ VideoWriter cubeTransform(VideoWriter video, bool perspective){
     myfile.close();
     Mat image(600, 800, CV_8UC3, Scalar(255, 255, 255));
     Mat scale50 = (Mat_<double>(4, 4) << 100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1);
-    double radian = 30 * M_PI / 180;
+    double radian = 30 * M_PI / 180
     //Mat rotatedown = (Mat_<double>(4, 4) << cos(radian), 0, sin(radian), 0, 0, 1, 0, 0, -sin(radian), 0, cos(radian), 0, 0, 0, 0, 1);
     Mat transformation = scale50;
     vector<Mat> points; // store a vector of the points +- 1 represented as homogenous matrices
@@ -208,7 +208,7 @@ VideoWriter cubeTransform(VideoWriter video, bool perspective){
         }
         else{
             image = to2dim(rotated);
-        }
+        }d
 
         
         video.write(image);
